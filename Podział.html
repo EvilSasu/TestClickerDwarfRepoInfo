@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Architektura - Mobilka Drwala</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #1a2530;
+            --folder-color: #f39c12;
+            --file-color: #3498db;
+            --script-color: #2ecc71;
+            --border-radius: 8px;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2530 0%, #2c3e50 100%);
+            color: var(--light-color);
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        
+        h1 {
+            color: var(--light-color);
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        
+        .subtitle {
+            color: var(--secondary-color);
+            font-size: 1.2rem;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+        
+        .structure-panel {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .details-panel {
+            flex: 2;
+            min-width: 400px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .panel-title {
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            color: var(--light-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .folder-structure {
+            font-family: 'Courier New', Courier, monospace;
+            padding-left: 10px;
+        }
+        
+        .folder {
+            margin: 8px 0;
+            position: relative;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .folder::before {
+            content: '📁 ';
+            color: var(--folder-color);
+        }
+        
+        .folder.open::before {
+            content: '📂 ';
+        }
+        
+        .file {
+            margin: 5px 0;
+            margin-left: 20px;
+            color: var(--file-color);
+            cursor: pointer;
+            padding: 2px 5px;
+            border-radius: 3px;
+            transition: background-color 0.2s;
+        }
+        
+        .file:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .file::before {
+            content: '📄 ';
+        }
+        
+        .file.script::before {
+            content: '⌨️ ';
+            color: var(--script-color);
+        }
+        
+        .folder-content {
+            display: none;
+            margin-left: 20px;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            padding-left: 10px;
+        }
+        
+        .folder.open > .folder-content {
+            display: block;
+        }
+        
+        .file-details {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+            border-left: 4px solid var(--secondary-color);
+        }
+        
+        .file-details h3 {
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .file-details p {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        .responsibilities {
+            margin-top: 20px;
+        }
+        
+        .responsibilities ul {
+            list-style-type: none;
+        }
+        
+        .responsibilities li {
+            padding: 8px 0;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .responsibilities li::before {
+            content: '► ';
+            color: var(--accent-color);
+            margin-right: 8px;
+            flex-shrink: 0;
+            margin-top: 4px;
+        }
+        
+        .key-mechanics {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .mechanic {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            border-top: 3px solid var(--accent-color);
+            transition: transform 0.2s;
+        }
+        
+        .mechanic:hover {
+            transform: translateY(-3px);
+        }
+        
+        .mechanic h4 {
+            color: var(--accent-color);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+        }
+        
+        .highlight {
+            background-color: rgba(52, 152, 219, 0.2);
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .structure-panel, .details-panel {
+                max-height: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Mobilka Drwala (Clicker Zręcznościowe)</h1>
+            <p class="subtitle">Architektura projektu i struktura katalogów</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="structure-panel">
+                <div class="panel-title">
+                    <span>📁 Struktura katalogów</span>
+                </div>
+                <div class="folder-structure">
+                    <div class="folder open" onclick="toggleFolder(this)">Assets
+                        <div class="folder-content">
+                            <div class="folder open" onclick="toggleFolder(this)">Scripts
+                                <div class="folder-content">
+                                    <div class="folder open" onclick="toggleFolder(this)">Core
+                                        <div class="folder-content">
+                                            <div class="folder open" onclick="toggleFolder(this)">Data
+                                                <div class="folder-content">
+                                                    <div class="file script" onclick="showFileDetails('BigNumber')">BigNumber.cs</div>
+                                                    <div class="file script" onclick="showFileDetails('GameData')">GameData.cs</div>
+                                                    <div class="file script" onclick="showFileDetails('ResourceType')">ResourceType.cs</div>
+                                                    <div class="file script" onclick="showFileDetails('LocationData')">LocationData.cs</div>
+                                                    <div class="file script" onclick="showFileDetails('BossData')">BossData.cs</div>
+                                                    <div class="file script" onclick="showFileDetails('ExpeditionData')">ExpeditionData.cs</div>
+                                                </div>
+                                            </div>
+                                            <div class="folder open" onclick="toggleFolder(this)">Managers
+                                                <div class="folder-content">
+                                                    <div class="file script" onclick="showFileDetails('GameController')">GameController.cs</div>
+                                                    <div class="file script" onclick="showFileDetails('ResourceManager')">ResourceManager.cs</div>
+                                                    <div class="file script" onclick="showFileDetails('ComboSystem')">ComboSystem.cs</div>
+                                                    <div class="file script" onclick="showFileDetails('BuildingManager')">BuildingManager.cs</div>
+                                                    <div class="file script" onclick="showFileDetails('DwarfManager')">DwarfManager.cs</div>
+                                                    <div class="file script" onclick="showFileDetails('SkillManager')">SkillManager.cs</div>
+                                                    <div class="file script" onclick="showFileDetails('ExpeditionManager')">ExpeditionManager.cs</div>
+                                                    <div class="file script" onclick="showFileDetails('BossManager')">BossManager.cs</div>
+                                                    <div class="file script" onclick="showFileDetails('MiniGameManager')">MiniGameManager.cs</div>
+                                                    <div class="file script" onclick="showFileDetails('ShopManager')">ShopManager.cs</div>
+                                                    <div class="file script" onclick="showFileDetails('ProgressionManager')">ProgressionManager.cs</div>
+                                                </div>
+                                            </div>
+                                            <div class="folder" onclick="toggleFolder(this)">Events
+                                                <div class="folder-content">
+                                                    <div class="file script" onclick="showFileDetails('GameEvents')">GameEvents.cs</div>
+                                                </div>
+                                            </div>
+                                            <div class="folder" onclick="toggleFolder(this)">Utilities
+                                                <div class="folder-content">
+                                                    <div class="file script" onclick="showFileDetails('SaveLoadManager')">SaveLoadManager.cs</div>
+                                                    <div class="file script" onclick="showFileDetails('Formatter')">Formatter.cs</div>
+                                                    <div class="file script" onclick="showFileDetails('Helpers')">Helpers.cs</div>
+                                                    <div class="file script" onclick="showFileDetails('AudioManager')">AudioManager.cs</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="folder" onclick="toggleFolder(this)">Models
+                                        <div class="folder-content">
+                                            <div class="folder" onclick="toggleFolder(this)">Resources
+                                                <div class="folder-content">
+                                                    <div class="file script" onclick="showFileDetails('ResourceGenerator')">ResourceGenerator.cs</div>
+                                                    <div class="file script" onclick="showFileDetails('InventorySystem')">InventorySystem.cs</div>
+                                                </div>
+                                            </div>
+                                            <div class="folder" onclick="toggleFolder(this)">Characters
+                                                <div class="folder-content">
+                                                    <div class="file script" onclick="showFileDetails('Lumberjack')">Lumberjack.cs</div>
+                                                    <div class="file script" onclick="showFileDetails('Dwarf')">Dwarf.cs</div>
+                                                    <div class="file script" onclick="showFileDetails('Boss')">Boss.cs</div>
+                                                </div>
+                                            </div>
+                                            <div class="folder" onclick="toggleFolder(this)">Buildings
+                                                <div class="folder-content">
+                                                    <div class="file script" onclick="showFileDetails('Building')">Building.cs</div>
+                                                    <div class="file script" onclick="showFileDetails('WoodCutter')">WoodCutter.cs</div>
+                                                    <div class="file script" onclick="showFileDetails('Blacksmith')">Blacksmith.cs</div>
+                                                    <div class="file script" onclick="showFileDetails('Alchemist')">Alchemist.cs</div>
+                                                    <div class="file script" onclick="showFileDetails('Tavern')">Tavern.cs</div>
+                                                    <div class="file script" onclick="showFileDetails('Mine')">Mine.cs</div>
+                                                    <div class="file script" onclick="showFileDetails('Guild')">Guild.cs</div>
+                                                    <div class="file script" onclick="showFileDetails('House')">House.cs</div>
+                                                </div>
+                                            </div>
+                                            <div class="folder" onclick="toggleFolder(this)">Items
+                                                <div class="folder-content">
+                                                    <div class="file script" onclick="showFileDetails('Axe')">Axe.cs</div>
+                                                    <div class="file script" onclick="showFileDetails('Potion')">Potion.cs</div>
+                                                    <div class="file script" onclick="showFileDetails('Equipment')">Equipment.cs</div>
+                                                </div>
+                                            </div>
+                                            <div class="folder" onclick="toggleFolder(this)">Gameplay
+                                                <div class="folder-content">
+                                                    <div class="file script" onclick="showFileDetails('Expedition')">Expedition.cs</div>
+                                                    <div class="file script" onclick="showFileDetails('ComboSystem')">ComboSystem.cs</div>
+                                                    <div class="file script" onclick="showFileDetails('SkillTree')">SkillTree.cs</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="folder" onclick="toggleFolder(this)">UI
+                                        <div class="folder-content">
+                                            <div class="file script" onclick="showFileDetails('ClickEffectController')">ClickEffectController.cs</div>
+                                            <div class="file script" onclick="showFileDetails('ResourcePanelController')">ResourcePanelController.cs</div>
+                                            <div class="file script" onclick="showFileDetails('BuildingPanelController')">BuildingPanelController.cs</div>
+                                            <div class="file script" onclick="showFileDetails('DwarfPanelController')">DwarfPanelController.cs</div>
+                                            <div class="file script" onclick="showFileDetails('SkillPanelController')">SkillPanelController.cs</div>
+                                            <div class="file script" onclick="showFileDetails('ExpeditionPanelController')">ExpeditionPanelController.cs</div>
+                                            <div class="file script" onclick="showFileDetails('BossPanelController')">BossPanelController.cs</div>
+                                            <div class="file script" onclick="showFileDetails('ShopPanelController')">ShopPanelController.cs</div>
+                                            <div class="file script" onclick="showFileDetails('ComboBarController')">ComboBarController.cs</div>
+                                            <div class="file script" onclick="showFileDetails('MiniGameUI')">MiniGameUI.cs</div>
+                                        </div>
+                                    </div>
+                                    <div class="folder" onclick="toggleFolder(this)">MiniGames
+                                        <div class="folder-content">
+                                            <div class="file script" onclick="showFileDetails('BaseMiniGame')">BaseMiniGame.cs</div>
+                                            <div class="file script" onclick="showFileDetails('CuttingChallenge')">CuttingChallenge.cs</div>
+                                            <div class="file script" onclick="showFileDetails('ObstacleDodge')">ObstacleDodge.cs</div>
+                                            <div class="file script" onclick="showFileDetails('RhythmGame')">RhythmGame.cs</div>
+                                            <div class="file script" onclick="showFileDetails('BossFightGame')">BossFightGame.cs</div>
+                                            <div class="file script" onclick="showFileDetails('BonusRound')">BonusRound.cs</div>
+                                        </div>
+                                    </div>
+                                    <div class="folder" onclick="toggleFolder(this)">ScriptableObjects
+                                        <div class="folder-content">
+                                            <div class="folder" onclick="toggleFolder(this)">Resources
+                                                <div class="folder-content">
+                                                    <div class="file">ResourceData.asset</div>
+                                                    <div class="file">MaterialData.asset</div>
+                                                </div>
+                                            </div>
+                                            <div class="folder" onclick="toggleFolder(this)">Buildings
+                                                <div class="folder-content">
+                                                    <div class="file">BuildingData.asset</div>
+                                                    <div class="file">ConcreteBuildingData.asset</div>
+                                                </div>
+                                            </div>
+                                            <div class="folder" onclick="toggleFolder(this)">Items
+                                                <div class="folder-content">
+                                                    <div class="file">AxeData.asset</div>
+                                                    <div class="file">PotionData.asset</div>
+                                                    <div class="file">EquipmentData.asset</div>
+                                                </div>
+                                            </div>
+                                            <div class="folder" onclick="toggleFolder(this)">Characters
+                                                <div class="folder-content">
+                                                    <div class="file">DwarfData.asset</div>
+                                                    <div class="file">BossData.asset</div>
+                                                </div>
+                                            </div>
+                                            <div class="folder" onclick="toggleFolder(this)">Skills
+                                                <div class="folder-content">
+                                                    <div class="file">ActiveSkillData.asset</div>
+                                                    <div class="file">PassiveSkillData.asset</div>
+                                                </div>
+                                            </div>
+                                            <div class="folder" onclick="toggleFolder(this)">Gameplay
+                                                <div class="folder-content">
+                                                    <div class="file">ExpeditionData.asset</div>
+                                                    <div class="file">LocationData.asset</div>
+                                                    <div class="file">MiniGameData.asset</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="folder" onclick="toggleFolder(this)">ThirdParty
+                                        <div class="folder-content">
+                                            <div class="file script" onclick="showFileDetails('AdManager')">AdManager.cs</div>
+                                            <div class="file script" onclick="showFileDetails('IAPManager')">IAPManager.cs</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="details-panel">
+                <div class="panel-title">
+                    <span>📋 Szczegóły plików i mechaniki</span>
+                </div>
+                
+                <div id="file-details">
+                    <div class="file-details">
+                        <h3>Wybierz plik z struktury katalogów, aby zobaczyć szczegóły</h3>
+                        <p>Kliknij na dowolny plik .cs w panelu po lewej stronie, aby wyświetlić informacje o jego przeznaczeniu i funkcjonalności.</p>
+                    </div>
+                </div>
+                
+                <div class="responsibilities">
+                    <h3>Kluczowe pliki i ich odpowiedzialność:</h3>
+                    <ul>
+                        <li><strong>BigNumber.cs</strong> - Implementacja dużych liczb do zarządzania zasobami</li>
+                        <li><strong>GameData.cs</strong> - Główna klasa danych do zapisu/ładowania stanu gry</li>
+                        <li><strong>ResourceType.cs</strong> - Enum definiujący typy zasobów (drewno, kamień, żelazo, itp.)</li>
+                        <li><strong>GameController.cs</strong> - Główny kontroler zarządzający całą grą</li>
+                        <li><strong>ResourceManager.cs</strong> - Zarządzanie zasobami i ekonomią gry</li>
+                        <li><strong>Lumberjack.cs</strong> - Główna postać gracza z statystykami</li>
+                        <li><strong>BuildingManager.cs</strong> - Zarządzanie budynkami i ich ulepszeniami</li>
+                        <li><strong>ExpeditionManager.cs</strong> - Zarządzanie ekspedycjami do nowych lokacji</li>
+                        <li><strong>SkillTree.cs</strong> - Implementacja drzewka umiejętności (aktywne i pasywne)</li>
+                    </ul>
+                </div>
+                
+                <div class="key-mechanics">
+                    <h3 style="grid-column: 1 / -1;">Główne mechaniki zintegrowane w architekturze:</h3>
+                    <div class="mechanic">
+                        <h4>🖱️ System Clickerowy</h4>
+                        <p>Podstawowe kliknięcia, combo, automatyczne zbieranie</p>
+                    </div>
+                    <div class="mechanic">
+                        <h4>🏗️ System Budynków</h4>
+                        <p>Drwal, Kowal, Alchemik, Tawerna, Kopalnia, Gildia</p>
+                    </div>
+                    <div class="mechanic">
+                        <h4>🧙 System Krasnoludów</h4>
+                        <p>Przydzielanie do zadań i ekspedycji</p>
+                    </div>
+                    <div class="mechanic">
+                        <h4>🐉 System Walki z Bossami</h4>
+                        <p>Walki zręcznościowe z bossami lokacji</p>
+                    </div>
+                    <div class="mechanic">
+                        <h4>🌟 System Umiejętności</h4>
+                        <p>Aktywne i pasywne umiejętności</p>
+                    </div>
+                    <div class="mechanic">
+                        <h4>🎒 System Ekwipunku</h4>
+                        <p>Topory, mikstury, pierścienie i amulety</p>
+                    </div>
+                    <div class="mechanic">
+                        <h4>🎮 System Minigier</h4>
+                        <p>Integracja elementów zręcznościowych</p>
+                    </div>
+                    <div class="mechanic">
+                        <h4>📈 System Progresji</h4>
+                        <p>Odblokowywanie nowych lokacji i zasobów</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Architektura zapewnia modularność i łatwe rozszerzanie gry o nowe funkcje</p>
+        </footer>
+    </div>
+
+    <script>
+        function toggleFolder(element) {
+            // Zapobiegaj propagacji zdarzenia, aby nie powodować zamykania folderów nadrzędnych
+            event.stopPropagation();
+            element.classList.toggle('open');
+        }
+        
+        function showFileDetails(fileName) {
+            const details = {
+                'BigNumber': {
+                    title: 'BigNumber.cs',
+                    description: 'Implementacja dużych liczb do zarządzania zasobami w grze. Umożliwia operacje na bardzo dużych wartościach, które przekraczają standardowe typy liczbowe.',
+                    responsibility: 'Przechowywanie i operacje na dużych liczbach, formatowanie wyświetlania, obsługa notacji naukowej dla bardzo dużych wartości'
+                },
+                'GameData': {
+                    title: 'GameData.cs',
+                    description: 'Główna klasa danych do zapisu i ładowania stanu gry. Zawiera wszystkie informacje o postępie gracza, posiadanych zasobach, budynkach i odblokowanych lokacjach.',
+                    responsibility: 'Przechowywanie stanu gry, serializacja i deserialacja danych, zarządzanie wersjami zapisów gry'
+                },
+                'ResourceType': {
+                    title: 'ResourceType.cs',
+                    description: 'Enum definiujący wszystkie typy zasobów dostępnych w grze: drewno, kamień, żelazo, złoto, kryształy, magiczny pył itp.',
+                    responsibility: 'Definicja typów zasobów i ich identyfikatorów, zapewnienie spójności w całym systemie zarządzania zasobami'
+                },
+                'GameController': {
+                    title: 'GameController.cs',
+                    description: 'Główny kontroler zarządzający całą grą. Koordynuje działanie wszystkich menedżerów, obsługuje główną pętlę gry i zarządza zmianą stanów gry.',
+                    responsibility: 'Nadzorowanie wszystkich systemów gry, zarządzanie stanami gry, obsługa pauzy i wznowienia gry'
+                },
+                'ResourceManager': {
+                    title: 'ResourceManager.cs',
+                    description: 'Zarządzanie zasobami i ekonomią gry. Dodawanie i odejmowanie zasobów, sprawdzanie warunków zakupów, obliczanie przychodów z budynków.',
+                    responsibility: 'Zarządzanie zasobami gracza, obliczanie ekonomii gry, powiadamianie innych systemów o zmianach w zasobach'
+                },
+                'Lumberjack': {
+                    title: 'Lumberjack.cs',
+                    description: 'Klasa reprezentująca główną postać gracza - drwala. Zawiera wszystkie statystyki, umiejętności, wyposażenie i ulepszenia związane z postacią.',
+                    responsibility: 'Reprezentacja postaci gracza, przechowywanie statystyk i umiejętności, obliczanie obrażeń i premii do zbierania zasobów'
+                },
+                'BuildingManager': {
+                    title: 'BuildingManager.cs',
+                    description: 'Zarządzanie budynkami i ich ulepszeniami. Odpowiada za tworzenie nowych budynków, ich ulepszanie oraz naliczanie przychodów z budynków.',
+                    responsibility: 'Tworzenie i zarządzanie budynkami, obliczanie przychodów, obsługa interakcji UI związanych z budynkami'
+                },
+                'ExpeditionManager': {
+                    title: 'ExpeditionManager.cs',
+                    description: 'Zarządzanie ekspedycjami do nowych lokacji. Umożliwia wysyłanie krasnoludów na wyprawy w celu odkrywania nowych terenów i zasobów.',
+                    responsibility: 'Inicjowanie i zarządzanie ekspedycjami, obliczanie czasu trwania i nagród, obsługa zdarzeń podczas wypraw'
+                },
+                'SkillTree': {
+                    title: 'SkillTree.cs',
+                    description: 'Implementacja drzewka umiejętności z podziałem na umiejętności aktywne i pasywne. Zapewnia system progresji postaci oparty na punktach umiejętności.',
+                    responsibility: 'Przechowywanie struktury drzewka umiejętności, obsługa odblokowywania umiejętności, aplikowanie efektów umiejętności'
+                }
+            };
+            
+            const fileInfo = details[fileName] || {
+                title: fileName + '.cs',
+                description: 'Szczegóły dotyczące tego pliku zostaną dodane w przyszłości. Plik jest częścią architektury projektu "Mobilka Drwala".',
+                responsibility: 'Funkcjonalność w trakcie implementacji - szczegóły wkrótce'
+            };
+            
+            document.getElementById('file-details').innerHTML = `
+                <div class="file-details">
+                    <h3><span class="highlight">${fileInfo.title}</span></h3>
+                    <p><strong>Opis:</strong> ${fileInfo.description}</p>
+                    <p><strong>Odpowiedzialność:</strong> ${fileInfo.responsibility}</p>
+                </div>
+            `;
+            
+            // Przewiń do góry panelu szczegółów
+            document.getElementById('file-details').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
