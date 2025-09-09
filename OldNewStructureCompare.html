@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Porównanie struktur - stara vs nowa</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #1a2530;
+            --folder-color: #f39c12;
+            --file-color: #3498db;
+            --script-color: #2ecc71;
+            --border-radius: 8px;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --missing-color: #e74c3c;
+            --existing-color: #2ecc71;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2530 0%, #2c3e50 100%);
+            color: var(--light-color);
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        
+        h1 {
+            color: var(--light-color);
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        
+        .subtitle {
+            color: var(--secondary-color);
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+        
+        .comparison-section {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .panel {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .panel-title {
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            color: var(--light-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .folder-structure {
+            font-family: 'Courier New', Courier, monospace;
+            padding-left: 10px;
+        }
+        
+        .folder {
+            margin: 8px 0;
+            position: relative;
+            user-select: none;
+        }
+        
+        .folder::before {
+            content: '📁 ';
+            color: var(--folder-color);
+        }
+        
+        .folder.missing::before {
+            content: '❌ ';
+            color: var(--missing-color);
+        }
+        
+        .file {
+            margin: 5px 0;
+            margin-left: 20px;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        
+        .file::before {
+            content: '📄 ';
+        }
+        
+        .file.missing {
+            color: var(--missing-color);
+        }
+        
+        .file.missing::before {
+            content: '❌ ';
+        }
+        
+        .file.existing::before {
+            content: '✅ ';
+            color: var(--existing-color);
+        }
+        
+        .folder-content {
+            margin-left: 20px;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            padding-left: 10px;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+        }
+        
+        .missing-color {
+            background-color: var(--missing-color);
+        }
+        
+        .existing-color {
+            background-color: var(--existing-color);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 968px) {
+            .comparison-section {
+                flex-direction: column;
+            }
+            
+            .panel {
+                max-height: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Porównanie struktur projektu</h1>
+            <p class="subtitle">Stara vs nowa wersja architektury</p>
+        </header>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color missing-color"></div>
+                <span>Brakuje w nowej wersji</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color existing-color"></div>
+                <span>Obecne w nowej wersji</span>
+            </div>
+        </div>
+        
+        <div class="comparison-section">
+            <div class="panel">
+                <div class="panel-title">
+                    <span>📁 Stara struktura (Mobilka Drwala)</span>
+                </div>
+                <div class="folder-structure">
+                    <div class="folder">Assets
+                        <div class="folder-content">
+                            <div class="folder">Scripts
+                                <div class="folder-content">
+                                    <div class="folder">Core
+                                        <div class="folder-content">
+                                            <div class="folder">Data
+                                                <div class="folder-content">
+                                                    <div class="file missing">BigNumber.cs</div>
+                                                    <div class="file missing">GameData.cs</div>
+                                                    <div class="file missing">ResourceType.cs</div>
+                                                    <div class="file missing">LocationData.cs</div>
+                                                    <div class="file missing">BossData.cs</div>
+                                                    <div class="file missing">ExpeditionData.cs</div>
+                                                </div>
+                                            </div>
+                                            <div class="folder">Managers
+                                                <div class="folder-content">
+                                                    <div class="file missing">GameController.cs</div>
+                                                    <div class="file missing">ResourceManager.cs</div>
+                                                    <div class="file missing">ComboSystem.cs</div>
+                                                    <div class="file missing">BuildingManager.cs</div>
+                                                    <div class="file missing">DwarfManager.cs</div>
+                                                    <div class="file missing">SkillManager.cs</div>
+                                                    <div class="file missing">ExpeditionManager.cs</div>
+                                                    <div class="file missing">BossManager.cs</div>
+                                                    <div class="file missing">MiniGameManager.cs</div>
+                                                    <div class="file missing">ShopManager.cs</div>
+                                                    <div class="file missing">ProgressionManager.cs</div>
+                                                </div>
+                                            </div>
+                                            <div class="folder">Events
+                                                <div class="folder-content">
+                                                    <div class="file missing">GameEvents.cs</div>
+                                                </div>
+                                            </div>
+                                            <div class="folder">Utilities
+                                                <div class="folder-content">
+                                                    <div class="file missing">SaveLoadManager.cs</div>
+                                                    <div class="file missing">Formatter.cs</div>
+                                                    <div class="file missing">Helpers.cs</div>
+                                                    <div class="file missing">AudioManager.cs</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="folder missing">Models
+                                        <div class="folder-content">
+                                            <div class="folder missing">Resources
+                                                <div class="folder-content">
+                                                    <div class="file missing">ResourceGenerator.cs</div>
+                                                    <div class="file missing">InventorySystem.cs</div>
+                                                </div>
+                                            </div>
+                                            <div class="folder missing">Characters
+                                                <div class="folder-content">
+                                                    <div class="file missing">Lumberjack.cs</div>
+                                                    <div class="file missing">Dwarf.cs</div>
+                                                    <div class="file missing">Boss.cs</div>
+                                                </div>
+                                            </div>
+                                            <div class="folder missing">Buildings
+                                                <div class="folder-content">
+                                                    <div class="file missing">Building.cs</div>
+                                                    <div class="file missing">WoodCutter.cs</div>
+                                                    <div class="file missing">Blacksmith.cs</div>
+                                                    <div class="file missing">Alchemist.cs</div>
+                                                    <div class="file missing">Tavern.cs</div>
+                                                    <div class="file missing">Mine.cs</div>
+                                                    <div class="file missing">Guild.cs</div>
+                                                    <div class="file missing">House.cs</div>
+                                                </div>
+                                            </div>
+                                            <div class="folder missing">Items
+                                                <div class="folder-content">
+                                                    <div class="file missing">Axe.cs</div>
+                                                    <div class="file missing">Potion.cs</div>
+                                                    <div class="file missing">Equipment.cs</div>
+                                                </div>
+                                            </div>
+                                            <div class="folder missing">Gameplay
+                                                <div class="folder-content">
+                                                    <div class="file missing">Expedition.cs</div>
+                                                    <div class="file missing">ComboSystem.cs</div>
+                                                    <div class="file missing">SkillTree.cs</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="folder missing">UI
+                                        <div class="folder-content">
+                                            <div class="file missing">ClickEffectController.cs</div>
+                                            <div class="file missing">ResourcePanelController.cs</div>
+                                            <div class="file missing">BuildingPanelController.cs</div>
+                                            <div class="file missing">DwarfPanelController.cs</div>
+                                            <div class="file missing">SkillPanelController.cs</div>
+                                            <div class="file missing">ExpeditionPanelController.cs</div>
+                                            <div class="file missing">BossPanelController.cs</div>
+                                            <div class="file missing">ShopPanelController.cs</div>
+                                            <div class="file missing">ComboBarController.cs</div>
+                                            <div class="file missing">MiniGameUI.cs</div>
+                                        </div>
+                                    </div>
+                                    <div class="folder missing">MiniGames
+                                        <div class="folder-content">
+                                            <div class="file missing">BaseMiniGame.cs</div>
+                                            <div class="file missing">CuttingChallenge.cs</div>
+                                            <div class="file missing">ObstacleDodge.cs</div>
+                                            <div class="file missing">RhythmGame.cs</div>
+                                            <div class="file missing">BossFightGame.cs</div>
+                                            <div class="file missing">BonusRound.cs</div>
+                                        </div>
+                                    </div>
+                                    <div class="folder missing">ScriptableObjects
+                                        <div class="folder-content">
+                                            <div class="folder missing">Resources
+                                                <div class="folder-content">
+                                                    <div class="file missing">ResourceData.asset</div>
+                                                    <div class="file missing">MaterialData.asset</div>
+                                                </div>
+                                            </div>
+                                            <div class="folder missing">Buildings
+                                                <div class="folder-content">
+                                                    <div class="file missing">BuildingData.asset</div>
+                                                    <div class="file missing">ConcreteBuildingData.asset</div>
+                                                </div>
+                                            </div>
+                                            <div class="folder missing">Items
+                                                <div class="folder-content">
+                                                    <div class="file missing">AxeData.asset</div>
+                                                    <div class="file missing">PotionData.asset</div>
+                                                    <div class="file missing">EquipmentData.asset</div>
+                                                </div>
+                                            </div>
+                                            <div class="folder missing">Characters
+                                                <div class="folder-content">
+                                                    <div class="file missing">DwarfData.asset</div>
+                                                    <div class="file missing">BossData.asset</div>
+                                                </div>
+                                            </div>
+                                            <div class="folder missing">Skills
+                                                <div class="folder-content">
+                                                    <div class="file missing">ActiveSkillData.asset</div>
+                                                    <div class="file missing">PassiveSkillData.asset</div>
+                                                </div>
+                                            </div>
+                                            <div class="folder missing">Gameplay
+                                                <div class="folder-content">
+                                                    <div class="file missing">ExpeditionData.asset</div>
+                                                    <div class="file missing">LocationData.asset</div>
+                                                    <div class="file missing">MiniGameData.asset</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="folder missing">ThirdParty
+                                        <div class="folder-content">
+                                            <div class="file missing">AdManager.cs</div>
+                                            <div class="file missing">IAPManager.cs</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <div class="panel-title">
+                    <span>📁 Nowa struktura (DwarfVsElfsClicker)</span>
+                </div>
+                <div class="folder-structure">
+                    <div class="folder">Scripts
+                        <div class="folder-content">
+                            <div class="folder">Audio
+                                <div class="folder-content">
+                                    <div class="file existing">SoundtrackController.cs</div>
+                                </div>
+                            </div>
+                            <div class="folder">Core
+                                <div class="folder-content">
+                                    <div class="folder">BigNumber
+                                        <div class="folder-content">
+                                            <div class="file existing">BigNumber.cs</div>
+                                        </div>
+                                    </div>
+                                    <div class="folder">Buffs
+                                        <div class="folder-content">
+                                            <div class="file existing">Buff.cs</div>
+                                            <div class="file existing">BuffTarget.cs</div>
+                                        </div>
+                                    </div>
+                                    <div class="folder">Data
+                                        <div class="folder-content">
+                                            <div class="file existing">GameData.cs</div>
+                                            <div class="file existing">LocationData.cs</div>
+                                            <div class="file existing">ResourceType.cs</div>
+                                        </div>
+                                    </div>
+                                    <div class="folder">Events
+                                        <div class="folder-content">
+                                            <div class="file existing">GameEvents.cs</div>
+                                        </div>
+                                    </div>
+                                    <div class="folder">Offline
+                                        <div class="folder-content">
+                                            <div class="file existing">OfflineProgression.cs</div>
+                                        </div>
+                                    </div>
+                                    <div class="folder">Utils
+                                        <div class="folder-content">
+                                            <div class="file existing">DestroyAfterTime.cs</div>
+                                            <div class="file existing">Extensions.cs</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="folder">Enemies
+                                <div class="folder-content">
+                                    <div class="file existing">EnemyManager.cs</div>
+                                    <div class="file existing">HealthController.cs</div>
+                                    <div class="file existing">StageManager.cs</div>
+                                    <div class="file existing">TreeReactionController.cs</div>
+                                </div>
+                            </div>
+                            <div class="folder">Managers
+                                <div class="folder-content">
+                                    <div class="file existing">BuffManager.cs</div>
+                                    <div class="file existing">DamageBonusManager.cs</div>
+                                    <div class="file existing">DamageManager.cs</div>
+                                    <div class="file existing">GameController.cs</div>
+                                    <div class="file existing">QuestManager.cs</div>
+                                    <div class="file existing">ResourceBonusManager.cs</div>
+                                    <div class="file existing">ResourceManager.cs</div>
+                                    <div class="file existing">UpgradeManager.cs</div>
+                                </div>
+                            </div>
+                            <div class="folder">Models
+                                <div class="folder-content">
+                                    <div class="folder">Quest
+                                        <div class="folder-content">
+                                            <div class="file existing">Quest.cs</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="folder">UI
+                                <div class="folder-content">
+                                    <div class="file existing">DwarfViewController.cs</div>
+                                    <div class="file existing">ShowAndDisappearInTime.cs</div>
+                                    <div class="file existing">UIController.cs</div>
+                                    <div class="file existing">UIResourceController.cs</div>
+                                    <div class="folder">Health
+                                        <div class="folder-content">
+                                            <div class="file existing">HealthBarController.cs</div>
+                                        </div>
+                                    </div>
+                                    <div class="folder">UpgradeMenu
+                                        <div class="folder-content">
+                                            <div class="file existing">TransitionController.cs</div>
+                                            <div class="file existing">UIUpgradeController.cs</div>
+                                            <div class="file existing">UpgradeUIController.cs</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="folder">Upgrade
+                                <div class="folder-content">
+                                    <div class="file existing">IUpgradeEffect.cs</div>
+                                    <div class="file existing">UpgradeBase.cs</div>
+                                    <div class="file existing">UpgradeCategory.cs</div>
+                                    <div class="file existing">UpgradeDefinition.cs</div>
+                                    <div class="file existing">UpgradeState.cs</div>
+                                    <div class="folder">Editor
+                                        <div class="folder-content">
+                                            <div class="file existing">SerializeReferenceMenuDrawer.cs</div>
+                                        </div>
+                                    </div>
+                                    <div class="folder">Serialization
+                                        <div class="folder-content">
+                                            <div class="file existing">SerializeReferenceMenuAttribute.cs</div>
+                                        </div>
+                                    </div>
+                                    <div class="folder">Upgrades
+                                        <div class="folder-content">
+                                            <div class="file existing">CompositeUpgradeEffect.cs</div>
+                                            <div class="file existing">DamageMultiplierEffect.cs</div>
+                                            <div class="file existing">ResourceFlatAdditionEffect.cs</div>
+                                            <div class="file existing">ResourceMultiplierEffect.cs</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <div class="panel-title">
+                <span>📋 Podsumowanie brakujących elementów</span>
+            </div>
+            <div class="folder-structure">
+                <div class="folder missing">MiniGames - cały folder z minigrami</div>
+                <div class="folder missing">ScriptableObjects - folder z obiektami do konfiguracji</div>
+                <div class="folder missing">ThirdParty - integracje z systemami zewnętrznymi</div>
+                <div class="folder missing">Models/Resources - modele zasobów</div>
+                <div class="folder missing">Models/Characters - modele postaci</div>
+                <div class="folder missing">Models/Buildings - modele budynków</div>
+                <div class="folder missing">Models/Items - modele przedmiotów</div>
+                <div class="folder missing">Models/Gameplay - modele mechanik rozgrywki</div>
+                
+                <div class="file missing">ComboSystem.cs (w Core/Managers i Models/Gameplay)</div>
+                <div class="file missing">BuildingManager.cs</div>
+                <div class="file missing">DwarfManager.cs</div>
+                <div class="file missing">SkillManager.cs</div>
+                <div class="file missing">ExpeditionManager.cs</div>
+                <div class="file missing">BossManager.cs</div>
+                <div class="file missing">MiniGameManager.cs</div>
+                <div class="file missing">ShopManager.cs</div>
+                <div class="file missing">ProgressionManager.cs</div>
+                <div class="file missing">SaveLoadManager.cs</div>
+                <div class="file missing">Formatter.cs</div>
+                <div class="file missing">Helpers.cs</div>
+                <div class="file missing">AudioManager.cs</div>
+                <div class="file missing">ResourceGenerator.cs</div>
+                <div class="file missing">InventorySystem.cs</div>
+                <div class="file missing">Lumberjack.cs</div>
+                <div class="file missing">Dwarf.cs</div>
+                <div class="file missing">Boss.cs</div>
+                <div class="file missing">Building.cs</div>
+                <div class="file missing">WoodCutter.cs</div>
+                <div class="file missing">Blacksmith.cs</div>
+                <div class="file missing">Alchemist.cs</div>
+                <div class="file missing">Tavern.cs</div>
+                <div class="file missing">Mine.cs</div>
+                <div class="file missing">Guild.cs</div>
+                <div class="file missing">House.cs</div>
+                <div class="file missing">Axe.cs</div>
+                <div class="file missing">Potion.cs</div>
+                <div class="file missing">Equipment.cs</div>
+                <div class="file missing">Expedition.cs</div>
+                <div class="file missing">SkillTree.cs</div>
+                <div class="file missing">ClickEffectController.cs</div>
+                <div class="file missing">ResourcePanelController.cs</div>
+                <div class="file missing">BuildingPanelController.cs</div>
+                <div class="file missing">DwarfPanelController.cs</div>
+                <div class="file missing">SkillPanelController.cs</div>
+                <div class="file missing">ExpeditionPanelController.cs</div>
+                <div class="file missing">BossPanelController.cs</div>
+                <div class="file missing">ShopPanelController.cs</div>
+                <div class="file missing">ComboBarController.cs</div>
+                <div class="file missing">MiniGameUI.cs</div>
+                <div class="file missing">BaseMiniGame.cs</div>
+                <div class="file missing">CuttingChallenge.cs</div>
+                <div class="file missing">ObstacleDodge.cs</div>
+                <div class="file missing">RhythmGame.cs</div>
+                <div class="file missing">BossFightGame.cs</div>
+                <div class="file missing">BonusRound.cs</div>
+                <div class="file missing">AdManager.cs</div>
+                <div class="file missing">IAPManager.cs</div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Porównanie architektur projektu - starej wersji "Mobilka Drwala" z nową "DwarfVsElfsClicker"</p>
+        </footer>
+    </div>
+</body>
+</html>

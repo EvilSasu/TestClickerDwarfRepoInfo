@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Architektura - DwarfVsElfsClicker</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #1a2530;
+            --folder-color: #f39c12;
+            --file-color: #3498db;
+            --script-color: #2ecc71;
+            --border-radius: 8px;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2530 0%, #2c3e50 100%);
+            color: var(--light-color);
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        
+        h1 {
+            color: var(--light-color);
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        
+        .subtitle {
+            color: var(--secondary-color);
+            font-size: 1.2rem;
+        }
+        
+        .search-box {
+            margin: 15px 0;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: var(--border-radius);
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid var(--secondary-color);
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--light-color);
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+        
+        .structure-panel {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .details-panel {
+            flex: 2;
+            min-width: 400px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .panel-title {
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            color: var(--light-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .folder-structure {
+            font-family: 'Courier New', Courier, monospace;
+            padding-left: 10px;
+        }
+        
+        .folder {
+            margin: 8px 0;
+            position: relative;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .folder::before {
+            content: '📁 ';
+            color: var(--folder-color);
+        }
+        
+        .folder.open::before {
+            content: '📂 ';
+        }
+        
+        .file {
+            margin: 5px 0;
+            margin-left: 20px;
+            color: var(--file-color);
+            cursor: pointer;
+            padding: 2px 5px;
+            border-radius: 3px;
+            transition: background-color 0.2s;
+        }
+        
+        .file:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .file::before {
+            content: '📄 ';
+        }
+        
+        .file.script::before {
+            content: '⌨️ ';
+            color: var(--script-color);
+        }
+        
+        .folder-content {
+            display: none;
+            margin-left: 20px;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            padding-left: 10px;
+        }
+        
+        .folder.open > .folder-content {
+            display: block;
+        }
+        
+        .file-details {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+            border-left: 4px solid var(--secondary-color);
+        }
+        
+        .file-details h3 {
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .file-details p {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        .responsibilities {
+            margin-top: 20px;
+        }
+        
+        .responsibilities ul {
+            list-style-type: none;
+        }
+        
+        .responsibilities li {
+            padding: 8px 0;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .responsibilities li::before {
+            content: '► ';
+            color: var(--accent-color);
+            margin-right: 8px;
+            flex-shrink: 0;
+            margin-top: 4px;
+        }
+        
+        .key-mechanics {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .mechanic {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            border-top: 3px solid var(--accent-color);
+            transition: transform 0.2s;
+        }
+        
+        .mechanic:hover {
+            transform: translateY(-3px);
+        }
+        
+        .mechanic h4 {
+            color: var(--accent-color);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+        }
+        
+        .highlight {
+            background-color: rgba(52, 152, 219, 0.2);
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        
+        .file.highlighted {
+            background-color: rgba(231, 76, 60, 0.3);
+            animation: pulse 1.5s infinite;
+        }
+		
+		/* Prosty styl dla przycisków */
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 16px;
+            text-decoration: none;
+            color: white;
+            background-color: #007bff;
+            border-radius: 5px;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        
+        @keyframes pulse {
+            0% { background-color: rgba(231, 76, 60, 0.3); }
+            50% { background-color: rgba(231, 76, 60, 0.6); }
+            100% { background-color: rgba(231, 76, 60, 0.3); }
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .structure-panel, .details-panel {
+                max-height: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+	<!-- Przyciski -->
+    <a href="indexOld.html" class="btn">Stara wersja strony</a>
+    <a href="OldNewStructureCompare.html" class="btn">Porównanie różnic</a>
+
+    <div class="container">
+        <header>
+            <h1>Dwarf Vs Elfs Clicker</h1>
+            <p class="subtitle">Architektura projektu i struktura katalogów</p>
+        </header>
+        
+        <div class="search-box">
+            <input type="text" id="search-input" placeholder="Wyszukaj plik lub folder...">
+        </div>
+        
+        <div class="main-content">
+            <div class="structure-panel">
+                <div class="panel-title">
+                    <span>📁 Struktura katalogów</span>
+                </div>
+                <div class="folder-structure" id="folder-structure">
+                    <div class="folder open" onclick="toggleFolder(this)">Scripts
+                        <div class="folder-content">
+                            <div class="folder open" onclick="toggleFolder(this)">Audio
+                                <div class="folder-content">
+                                    <div class="file script" onclick="showFileDetails('SoundtrackController')">SoundtrackController.cs</div>
+                                </div>
+                            </div>
+                            <div class="folder open" onclick="toggleFolder(this)">Core
+                                <div class="folder-content">
+                                    <div class="folder open" onclick="toggleFolder(this)">BigNumber
+                                        <div class="folder-content">
+                                            <div class="file script" onclick="showFileDetails('BigNumber')">BigNumber.cs</div>
+                                        </div>
+                                    </div>
+                                    <div class="folder open" onclick="toggleFolder(this)">Buffs
+                                        <div class="folder-content">
+                                            <div class="file script" onclick="showFileDetails('Buff')">Buff.cs</div>
+                                            <div class="file script" onclick="showFileDetails('BuffTarget')">BuffTarget.cs</div>
+                                        </div>
+                                    </div>
+                                    <div class="folder open" onclick="toggleFolder(this)">Data
+                                        <div class="folder-content">
+                                            <div class="file script" onclick="showFileDetails('GameData')">GameData.cs</div>
+                                            <div class="file script" onclick="showFileDetails('LocationData')">LocationData.cs</div>
+                                            <div class="file script" onclick="showFileDetails('ResourceType')">ResourceType.cs</div>
+                                        </div>
+                                    </div>
+                                    <div class="folder open" onclick="toggleFolder(this)">Events
+                                        <div class="folder-content">
+                                            <div class="file script" onclick="showFileDetails('GameEvents')">GameEvents.cs</div>
+                                        </div>
+                                    </div>
+                                    <div class="folder open" onclick="toggleFolder(this)">Offline
+                                        <div class="folder-content">
+                                            <div class="file script" onclick="showFileDetails('OfflineProgression')">OfflineProgression.cs</div>
+                                        </div>
+                                    </div>
+                                    <div class="folder open" onclick="toggleFolder(this)">Utils
+                                        <div class="folder-content">
+                                            <div class="file script" onclick="showFileDetails('DestroyAfterTime')">DestroyAfterTime.cs</div>
+                                            <div class="file script" onclick="showFileDetails('Extensions')">Extensions.cs</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="folder open" onclick="toggleFolder(this)">Enemies
+                                <div class="folder-content">
+                                    <div class="file script" onclick="showFileDetails('EnemyManager')">EnemyManager.cs</div>
+                                    <div class="file script" onclick="showFileDetails('HealthController')">HealthController.cs</div>
+                                    <div class="file script" onclick="showFileDetails('StageManager')">StageManager.cs</div>
+                                    <div class="file script" onclick="showFileDetails('TreeReactionController')">TreeReactionController.cs</div>
+                                </div>
+                            </div>
+                            <div class="folder open" onclick="toggleFolder(this)">Managers
+                                <div class="folder-content">
+                                    <div class="file script" onclick="showFileDetails('BuffManager')">BuffManager.cs</div>
+                                    <div class="file script" onclick="showFileDetails('DamageBonusManager')">DamageBonusManager.cs</div>
+                                    <div class="file script" onclick="showFileDetails('DamageManager')">DamageManager.cs</div>
+                                    <div class="file script" onclick="showFileDetails('GameController')">GameController.cs</div>
+                                    <div class="file script" onclick="showFileDetails('QuestManager')">QuestManager.cs</div>
+                                    <div class="file script" onclick="showFileDetails('ResourceBonusManager')">ResourceBonusManager.cs</div>
+                                    <div class="file script" onclick="showFileDetails('ResourceManager')">ResourceManager.cs</div>
+                                    <div class="file script" onclick="showFileDetails('UpgradeManager')">UpgradeManager.cs</div>
+                                </div>
+                            </div>
+                            <div class="folder open" onclick="toggleFolder(this)">Models
+                                <div class="folder-content">
+                                    <div class="folder open" onclick="toggleFolder(this)">Quest
+                                        <div class="folder-content">
+                                            <div class="file script" onclick="showFileDetails('Quest')">Quest.cs</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="folder open" onclick="toggleFolder(this)">UI
+                                <div class="folder-content">
+                                    <div class="file script" onclick="showFileDetails('DwarfViewController')">DwarfViewController.cs</div>
+                                    <div class="file script" onclick="showFileDetails('ShowAndDisappearInTime')">ShowAndDisappearInTime.cs</div>
+                                    <div class="file script" onclick="showFileDetails('UIController')">UIController.cs</div>
+                                    <div class="file script" onclick="showFileDetails('UIResourceController')">UIResourceController.cs</div>
+                                    <div class="folder open" onclick="toggleFolder(this)">Health
+                                        <div class="folder-content">
+                                            <div class="file script" onclick="showFileDetails('HealthBarController')">HealthBarController.cs</div>
+                                        </div>
+                                    </div>
+                                    <div class="folder open" onclick="toggleFolder(this)">UpgradeMenu
+                                        <div class="folder-content">
+                                            <div class="file script" onclick="showFileDetails('TransitionController')">TransitionController.cs</div>
+                                            <div class="file script" onclick="showFileDetails('UIUpgradeController')">UIUpgradeController.cs</div>
+                                            <div class="file script" onclick="showFileDetails('UpgradeUIController')">UpgradeUIController.cs</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="folder open" onclick="toggleFolder(this)">Upgrade
+                                <div class="folder-content">
+                                    <div class="file script" onclick="showFileDetails('IUpgradeEffect')">IUpgradeEffect.cs</div>
+                                    <div class="file script" onclick="showFileDetails('UpgradeBase')">UpgradeBase.cs</div>
+                                    <div class="file script" onclick="showFileDetails('UpgradeCategory')">UpgradeCategory.cs</div>
+                                    <div class="file script" onclick="showFileDetails('UpgradeDefinition')">UpgradeDefinition.cs</div>
+                                    <div class="file script" onclick="showFileDetails('UpgradeState')">UpgradeState.cs</div>
+                                    <div class="folder open" onclick="toggleFolder(this)">Editor
+                                        <div class="folder-content">
+                                            <div class="file script" onclick="showFileDetails('SerializeReferenceMenuDrawer')">SerializeReferenceMenuDrawer.cs</div>
+                                        </div>
+                                    </div>
+                                    <div class="folder open" onclick="toggleFolder(this)">Serialization
+                                        <div class="folder-content">
+                                            <div class="file script" onclick="showFileDetails('SerializeReferenceMenuAttribute')">SerializeReferenceMenuAttribute.cs</div>
+                                        </div>
+                                    </div>
+                                    <div class="folder open" onclick="toggleFolder(this)">Upgrades
+                                        <div class="folder-content">
+                                            <div class="file script" onclick="showFileDetails('CompositeUpgradeEffect')">CompositeUpgradeEffect.cs</div>
+                                            <div class="file script" onclick="showFileDetails('DamageMultiplierEffect')">DamageMultiplierEffect.cs</div>
+                                            <div class="file script" onclick="showFileDetails('ResourceFlatAdditionEffect')">ResourceFlatAdditionEffect.cs</div>
+                                            <div class="file script" onclick="showFileDetails('ResourceMultiplierEffect')">ResourceMultiplierEffect.cs</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="details-panel">
+                <div class="panel-title">
+                    <span>📋 Szczegóły plików i mechaniki</span>
+                </div>
+                
+                <div id="file-details">
+                    <div class="file-details">
+                        <h3>Wybierz plik z struktury katalogów, aby zobaczyć szczegóły</h3>
+                        <p>Kliknij na dowolny plik .cs w panelu po lewej stronie, aby wyświetlić informacje o jego przeznaczeniu i funkcjonalności.</p>
+                    </div>
+                </div>
+                
+                <div class="responsibilities">
+                    <h3>Kluczowe pliki i ich odpowiedzialność:</h3>
+                    <ul>
+                        <li><strong>BigNumber.cs</strong> - Implementacja dużych liczb do zarządzania zasobami w grze</li>
+                        <li><strong>GameData.cs</strong> - Główna klasa danych do zapisu/ładowania stanu gry</li>
+                        <li><strong>ResourceType.cs</strong> - Enum definiujący typy zasobów (drewno, kamień, żelazo, itp.)</li>
+                        <li><strong>GameController.cs</strong> - Centralny kontroler obsługujący główne interakcje gracza</li>
+                        <li><strong>ResourceManager.cs</strong> - System zarządzania zasobami gracza</li>
+                        <li><strong>BuffManager.cs</strong> - Menedżer obsługujący wszystkie aktywne buffy w grze</li>
+                        <li><strong>StageManager.cs</strong> - System zarządzający progresją przez kolejne stage'y</li>
+                        <li><strong>UpgradeManager.cs</strong> - System zarządzania ulepszeniami</li>
+                        <li><strong>HealthController.cs</strong> - Kontroler zdrowia przeciwników</li>
+                    </ul>
+                </div>
+                
+                <div class="key-mechanics">
+                    <h3 style="grid-column: 1 / -1;">Główne mechaniki zintegrowane w architekturze:</h3>
+                    <div class="mechanic">
+                        <h4>🖱️ System Clickerowy</h4>
+                        <p>Podstawowe kliknięcia, zadawanie obrażeń, zbieranie zasobów</p>
+                    </div>
+                    <div class="mechanic">
+                        <h4>⚔️ System Walki</h4>
+                        <p>Walka z przeciwnikami, stage'y, bossy</p>
+                    </div>
+                    <div class="mechanic">
+                        <h4>📊 System Zasobów</h4>
+                        <p>Zarządzanie zasobami, produkcja, ekonomia</p>
+                    </div>
+                    <div class="mechanic">
+                        <h4>🌟 System Buffów</h4>
+                        <p>Tymczasowe efekty modyfikujące parametry gry</p>
+                    </div>
+                    <div class="mechanic">
+                        <h4>🔧 System Ulepszeń</h4>
+                        <p>Ulepszenia postaci, budynków i umiejętności</p>
+                    </div>
+                    <div class="mechanic">
+                        <h4>🎵 System Audio</h4>
+                        <p>Muzyka i efekty dźwiękowe</p>
+                    </div>
+                    <div class="mechanic">
+                        <h4>📱 System UI</h4>
+                        <p>Interfejs użytkownika, paski zdrowia, menu</p>
+                    </div>
+                    <div class="mechanic">
+                        <h4>⏰ System Offline</h4>
+                        <p>Progresja podczas nieobecności gracza</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Architektura zapewnia modularność i łatwe rozszerzanie gry o nowe funkcje</p>
+        </footer>
+    </div>
+
+    <script>
+        // Dane szczegółowe dla wszystkich plików
+        const fileDetails = {
+            'SoundtrackController': {
+                title: 'SoundtrackController.cs',
+                description: 'Kontroler muzyki w tle. Odpowiada za uruchomienie i odtwarzanie przypisanego utworu muzycznego.',
+                responsibility: 'Inicjalizacja komponentu AudioSource, ustawienie przypisanego klipu audio, automatyczne rozpoczynanie odtwarzania muzyki w tle'
+            },
+            'BigNumber': {
+                title: 'BigNumber.cs',
+                description: 'Zaawansowana implementacja dużych liczb do zarządzania zasobami w grze. Umożliwia operacje na bardzo dużych wartościach z zachowaniem wydajności i obsługą wartości specjalnych zgodnie ze standardem IEEE 754.',
+                responsibility: 'Przechowywanie i operacje na dużych liczbach, formatowanie wyświetlania, obsługa notacji naukowej i jednostek SI dla bardzo dużych wartości'
+            },
+            'Buff': {
+                title: 'Buff.cs',
+                description: 'Klasa reprezentująca pojedynczy buff - czasowy efekt, który modyfikuje określony parametr gry (np. obrażenia, zasoby).',
+                responsibility: 'Przechowywanie informacji o buffie (id, typ, wartość, czas trwania), sprawdzanie, czy buff jest aktywny, przedłużanie czasu trwania istniejącego buffa'
+            },
+            'BuffTarget': {
+                title: 'BuffTarget.cs',
+                description: 'Enum definiujący wszystkie możliwe cele buffów w grze: np. mnożniki i dodatki do obrażeń, zasobów, redukcje kosztów, szansa i obrażenia krytyczne.',
+                responsibility: 'Centralny punkt odniesienia dla systemu buffów, ułatwienie dodawania nowych typów efektów w przyszłości, spójność pomiędzy BuffManagerem, ResourceManagerem i DamageManagerem'
+            },
+            'GameData': {
+                title: 'GameData.cs',
+                description: 'Główna klasa danych do zapisu i ładowania stanu gry. Zawiera wszystkie informacje o postępie gracza, posiadanych zasobach, budynkach i odblokowanych lokacjach.',
+                responsibility: 'Przechowywanie stanu gry, serializacja i deserialacja danych, zarządzanie wersjami zapisów gry'
+            },
+            'LocationData': {
+                title: 'LocationData.cs',
+                description: 'Dane konfiguracyjne lokacji zawierające informacje o dostępnych surowcach, przeciwnikach i innych właściwościach poziomu.',
+                responsibility: 'Przechowywanie statycznych informacji o danej lokacji, dostarczanie danych o spawnach surowców i przeciwników'
+            },
+            'ResourceType': {
+                title: 'ResourceType.cs',
+                description: 'Enum definiujący wszystkie typy zasobów dostępnych w grze: drewno, kamień, żelazo, złoto, kryształy, magiczny pył itp.',
+                responsibility: 'Definicja typów zasobów i ich identyfikatorów, zapewnienie spójności w całym systemie zarządzania zasobami'
+            },
+            'GameEvents': {
+                title: 'GameEvents.cs',
+                description: 'Centralny system eventów oparty na delegatach C#. Pozwala na komunikację między różnymi systemami gry bez bezpośrednich referencji.',
+                responsibility: 'Deklaracja i wywoływanie zdarzeń (kliknięcia, zmiana zasobów, zakupy, produkcja pasywna), umożliwienie luźnego powiązania między logiką gry, UI i kontrolerami efektów'
+            },
+            'OfflineProgression': {
+                title: 'OfflineProgression.cs',
+                description: 'System obsługujący progresję gracza w czasie, gdy gra była wyłączona. Symuluje działanie buffów i walki ze stage\'ami podczas offline.',
+                responsibility: 'Zapisywanie czasu wyjścia z gry, obliczanie ile czasu minęło od ostatniego logowania, aktualizacja buffów i progresji stage\'ów na podstawie tego czasu'
+            },
+            'DestroyAfterTime': {
+                title: 'DestroyAfterTime.cs',
+                description: 'Prosty skrypt do niszczenia obiektów po upływie określonego czasu.',
+                responsibility: 'Automatyczne niszczenie obiektów po zadanym czasie'
+            },
+            'Extensions': {
+                title: 'Extensions.cs',
+                description: 'Klasa zawierająca metody pomocnicze i rozszerzenia.',
+                responsibility: 'Dostarczanie małych helperów do różnych funkcji w grze'
+            },
+            'EnemyManager': {
+                title: 'EnemyManager.cs',
+                description: 'Manager przeciwników (np. drzew). Odpowiada za tworzenie nowego przeciwnika po śmierci poprzedniego.',
+                responsibility: 'Subskrybowanie eventu śmierci przeciwnika, obsługa czasu respawnu, instancjowanie prefabów przeciwnika w określonym miejscu, przechowywanie referencji do aktualnego przeciwnika'
+            },
+            'HealthController': {
+                title: 'HealthController.cs',
+                description: 'Kontroler zdrowia przeciwników. Zarządza maksymalnym i aktualnym zdrowiem, nagrodą za pokonanie oraz emituje eventy zmian zdrowia.',
+                responsibility: 'Śledzenie zdrowia przeciwnika, reagowanie na otrzymywane obrażenia, powiadamianie o śmierci przeciwnika i przyznawanie nagrody'
+            },
+            'StageManager': {
+                title: 'StageManager.cs',
+                description: 'System zarządzający progresją gracza przez kolejne stage\'y. Każdy stage zawiera przeciwników o rosnącym HP i nagrodach. Obsługuje zarówno walkę w czasie rzeczywistym, jak i symulację progresu offline.',
+                responsibility: 'Generowanie przeciwników z rosnącym HP i nagrodami, aktualizacja stanu po śmierci przeciwnika, integracja z ResourceManagerem i DamageManagerem, obsługa offline progression z uwzględnieniem buffów'
+            },
+            'TreeReactionController': {
+                title: 'TreeReactionController.cs',
+                description: 'Kontroler reakcji drzewa na akcje gracza i produkcję zasobów w czasie. Odpowiada za animacje drzewa, efekty cząsteczkowe i dźwięki po uderzeniu oraz śmierci.',
+                responsibility: 'Subskrybowanie eventów kliknięcia i pasywnej produkcji, uruchamianie animacji drzewa, emitowanie efektów cząsteczkowych (liście), odtwarzanie efektów dźwiękowych, obsługa animacji śmierci drzewa'
+            },
+            'BuffManager': {
+                title: 'BuffManager.cs',
+                description: 'Menedżer obsługujący wszystkie aktywne buffy w grze. Pozwala na dodawanie, przedłużanie, usuwanie i pobieranie wartości buffów.',
+                responsibility: 'Centralne zarządzanie buffami, obliczanie końcowych wartości z uwzględnieniem aktywnych buffów, integracja z systemem obrażeń, zasobów i kosztów'
+            },
+            'DamageBonusManager': {
+                title: 'DamageBonusManager.cs',
+                description: 'Manager bonusów do obrażeń. Zawiera globalne mnożniki i dodatki do obrażeń.',
+                responsibility: 'Przechowywanie i aplikowanie globalnych bonusów do obrażeń'
+            },
+            'DamageManager': {
+                title: 'DamageManager.cs',
+                description: 'Manager obrażeń. Zarządza podstawowymi obrażeniami z kliknięć oraz obrażeniami over time.',
+                responsibility: 'Obliczanie i zadawanie obrażeń, zarządzanie czasowymi źródłami obrażeń'
+            },
+            'GameController': {
+                title: 'GameController.cs',
+                description: 'Centralny kontroler obsługujący główne interakcje gracza (np. kliknięcia). Integruje zarządzanie zasobami z animacjami, efektami i logiką rozgrywki.',
+                responsibility: 'Reagowanie na wejście użytkownika, wywoływanie zdarzeń gry (kliknięcia, animacje, efekty), koordynacja między ResourceManagerem a systemem wizualnym'
+            },
+            'QuestManager': {
+                title: 'QuestManager.cs',
+                description: 'System zarządzania questami. Trzyma listę questów, umożliwia oznaczanie ukończonych questów i sprawdzanie wymagań dla upgrade\'ów.',
+                responsibility: 'Przechowywanie listy questów, aktualizacja stanu questów, zapewnienie dostępu do statusu questów (dla upgrade\'ów, UI itp.)'
+            },
+            'ResourceBonusManager': {
+                title: 'ResourceBonusManager.cs',
+                description: 'System zarządzania globalnymi bonusami dla zasobów. Oddziela logikę bonusów od ResourceManagera, aby łatwo skalować system.',
+                responsibility: 'Przechowywanie globalnych mnożników i redukcji kosztów, zastosowanie bonusów do wartości bazowych, aktualizacja bonusów na podstawie upgradów'
+            },
+            'ResourceManager': {
+                title: 'ResourceManager.cs',
+                description: 'System zarządzania zasobami gracza. Obsługuje produkcję zasobów (klik i pasywne), integruje się z bonusami i upgrade\'ami.',
+                responsibility: 'Dodawanie i odejmowanie zasobów, przekazywanie wartości do UI, integracja z ResourceBonusManagerem, emitowanie eventów dla innych systemów'
+            },
+            'UpgradeManager': {
+                title: 'UpgradeManager.cs',
+                description: 'System zarządzania ulepszeniami. Pozwala na zakup i aplikowanie ulepszeń do różnych aspektów gry.',
+                responsibility: 'Zarządzanie stanem ulepszeń, sprawdzanie warunków zakupu, aplikowanie efektów ulepszeń'
+            },
+            'Quest': {
+                title: 'Quest.cs',
+                description: 'Klasa reprezentująca pojedynczy quest w grze.',
+                responsibility: 'Przechowywanie informacji o questach (id, tytuł, opis, status ukończenia)'
+            },
+            'DwarfViewController': {
+                title: 'DwarfViewController.cs',
+                description: 'Kontroler animacji krasnoluda. Odpowiada za wizualne przedstawienie reakcji krasnoluda na kliknięcia gracza.',
+                responsibility: 'Subskrybowanie eventu kliknięcia, uruchamianie animacji "Hit" krasnoluda, uwzględnianie stanu jaskini (brak reakcji gdy jest otwarta)'
+            },
+            'ShowAndDisappearInTime': {
+                title: 'ShowAndDisappearInTime.cs',
+                description: 'Skrypt do tymczasowego wyświetlania i chowania obiektów po czasie.',
+                responsibility: 'Automatyczne chowanie obiektów po krótkim czasie'
+            },
+            'UIController': {
+                title: 'UIController.cs',
+                description: 'Główny kontroler interfejsu użytkownika. Zarządza wykrywaniem interakcji z UI.',
+                responsibility: 'Wykrywanie, czy kursor znajduje się nad elementem UI, zarządzanie warstwą UI'
+            },
+            'UIResourceController': {
+                title: 'UIResourceController.cs',
+                description: 'Kontroler interfejsu użytkownika do prezentacji zasobów. Wyświetla wartości w formie normalnej, SI oraz produkcję zasobów na sekundę.',
+                responsibility: 'Subskrybowanie eventów zmiany zasobów i produkcji pasywnej, aktualizacja tekstów w UI, obsługa wyświetlania w notacji pełnej lub skróconej (SI), synchronizacja UI z logiką gry bez bezpośrednich referencji do ResourceManagera'
+            },
+            'HealthBarController': {
+                title: 'HealthBarController.cs',
+                description: 'Kontroler paska zdrowia. Wyświetla aktualny stan zdrowia przeciwnika z możliwością płynnych animacji.',
+                responsibility: 'Wizualizacja zdrowia przeciwnika, obsługa płynnych zmian wartości, aktualizacja koloru w zależności od poziomu zdrowia'
+            },
+            'TransitionController': {
+                title: 'TransitionController.cs',
+                description: 'Kontroler przejść między różnymi widokami UI (np. pomiędzy lasem a jaskinią).',
+                responsibility: 'Zarządzanie animacjami przejść, przełączanie między różnymi panelami UI, obsługa stanu otwarcia jaskini'
+            },
+            'UIUpgradeController': {
+                title: 'UIUpgradeController.cs',
+                description: 'Kontroler UI dla menu ulepszeń. Zarządza stanem otwarcia/ zamknięcia menu.',
+                responsibility: 'Obsługa animacji otwierania i zamykania menu ulepszeń, śledzenie stanu menu'
+            },
+            'UpgradeUIController': {
+                title: 'UpgradeUIController.cs',
+                description: 'Kontroler UI dla pojedynczych ulepszeń. Wyświetla informacje o ulepszeniach i umożliwia ich zakup.',
+                responsibility: 'Wyświetlanie informacji o ulepszeniach (nazwa, opis, koszt), obsługa przycisku zakupu, odświeżanie stanu UI'
+            },
+            'IUpgradeEffect': {
+                title: 'IUpgradeEffect.cs',
+                description: 'Interfejs definiujący efekt ulepszenia. Wszystkie konkretne efekty muszą implementować ten interfejs.',
+                responsibility: 'Definicja kontraktu dla efektów ulepszeń, zapewnienie spójnego interfejsu aplikowania efektów'
+            },
+            'UpgradeBase': {
+                title: 'UpgradeBase.cs',
+                description: 'Bazowa klasa dla wszystkich ulepszeń w grze. Zawiera podstawowe właściwości i metody wspólne dla wszystkich ulepszeń.',
+                responsibility: 'Dostarczenie wspólnej bazy dla ulepszeń, przechowywanie podstawowych informacji (id, nazwa, koszt, czy kupiony)'
+            },
+            'UpgradeCategory': {
+                title: 'UpgradeCategory.cs',
+                description: 'Enum definiujący kategorie ulepszeń.',
+                responsibility: 'Klasyfikacja ulepszeń dla celów organizacyjnych i UI'
+            },
+            'UpgradeDefinition': {
+                title: 'UpgradeDefinition.cs',
+                description: 'Klasa definiująca ulepszenie. Zawiera wszystkie informacje o ulepszeniu: nazwę, opis, koszt, efekty i wymagania.',
+                responsibility: 'Przechowywanie konfiguracji ulepszeń, definicja efektów i wymagań, zapewnienie danych dla UI i logiki zakupu'
+            },
+            'UpgradeState': {
+                title: 'UpgradeState.cs',
+                description: 'Klasa przechowująca stan ulepszenia (czy zostało kupione).',
+                responsibility: 'Przechowywanie stanu ulepszeń, serializacja i deserializacja stanu'
+            },
+            'SerializeReferenceMenuDrawer': {
+                title: 'SerializeReferenceMenuDrawer.cs',
+                description: 'Narzędzie edytora Unity do łatwego wyboru typów efektów ulepszeń.',
+                responsibility: 'Ułatwienie konfiguracji efektów ulepszeń w inspektorze Unity'
+            },
+            'SerializeReferenceMenuAttribute': {
+                title: 'SerializeReferenceMenuAttribute.cs',
+                description: 'Atrybut do definiowania menu wyboru typów efektów ulepszeń w inspektorze Unity.',
+                responsibility: 'Dostarczenie metadanych dla edytora Unity do wyświetlania menu wyboru efektów'
+            },
+            'CompositeUpgradeEffect': {
+                title: 'CompositeUpgradeEffect.cs',
+                description: 'Efekt złożony, który łączy wiele efektów w jeden. Umożliwia tworzenie złożonych ulepszeń z wieloma efektami.',
+                responsibility: 'Przechowywanie listy efektów, aplikowanie wszystkich efektów w odpowiedniej kolejności'
+            },
+            'DamageMultiplierEffect': {
+                title: 'DamageMultiplierEffect.cs',
+                description: 'Efekt ulepszenia dodający mnożnik do obrażeń.',
+                responsibility: 'Aplikowanie mnożnika obrażeń do DamageBonusManagera'
+            },
+            'ResourceFlatAdditionEffect': {
+                title: 'ResourceFlatAdditionEffect.cs',
+                description: 'Efekt ulepszenia dodający stałą wartość do produkcji zasobów.',
+                responsibility: 'Aplikowanie dodatku do produkcji zasobów w ResourceBonusManagerze'
+            },
+            'ResourceMultiplierEffect': {
+                title: 'ResourceMultiplierEffect.cs',
+                description: 'Efekt ulepszenia dodający mnożnik do produkcji zasobów.',
+                responsibility: 'Aplikowanie mnożnika produkcji zasobów w ResourceBonusManagerze'
+            }
+        };
+
+        // Funkcja do pokazywania szczegółów pliku
+        function showFileDetails(fileId) {
+            const details = fileDetails[fileId];
+            if (!details) return;
+            
+            const detailsContainer = document.getElementById('file-details');
+            detailsContainer.innerHTML = `
+                <div class="file-details">
+                    <h3>${details.title}</h3>
+                    <p><strong>Opis:</strong> ${details.description}</p>
+                    <p><strong>Odpowiedzialność:</strong> ${details.responsibility}</p>
+                </div>
+            `;
+            
+            // Podświetlenie wybranego pliku w strukturze
+            const allFiles = document.querySelectorAll('.file');
+            allFiles.forEach(file => file.classList.remove('highlighted'));
+            
+            const selectedFile = document.querySelector(`.file[onclick="showFileDetails('${fileId}')"]`);
+            if (selectedFile) {
+                selectedFile.classList.add('highlighted');
+                
+                // Przewinięcie do wybranego pliku
+                selectedFile.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+
+        // Funkcja do otwierania/zamykania folderów
+        function toggleFolder(element) {
+            element.classList.toggle('open');
+            event.stopPropagation(); // Zapobiega propagacji do elementów nadrzędnych
+        }
+
+        // Funkcja do wyszukiwania
+        document.getElementById('search-input').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            
+            if (!searchTerm) {
+                // Resetuj podświetlenia jeśli wyszukiwanie jest puste
+                const allElements = document.querySelectorAll('.file, .folder');
+                allElements.forEach(el => {
+                    el.style.display = '';
+                    el.classList.remove('highlighted');
+                });
+                return;
+            }
+            
+            // Szukaj plików i folderów
+            const allElements = document.querySelectorAll('.file, .folder');
+            allElements.forEach(el => {
+                const text = el.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    el.style.display = '';
+                    el.classList.add('highlighted');
+                    
+                    // Otwórz wszystkie foldery nadrzędne
+                    let parent = el.parentElement;
+                    while (parent && parent.classList.contains('folder-content')) {
+                        const folder = parent.previousElementSibling;
+                        if (folder && folder.classList.contains('folder')) {
+                            folder.classList.add('open');
+                            parent.style.display = 'block';
+                        }
+                        parent = parent.parentElement;
+                    }
+                } else {
+                    el.style.display = text.includes(searchTerm) ? '' : 'none';
+                    el.classList.remove('highlighted');
+                }
+            });
+        });
+
+        // Automatyczne otwieranie folderów dla lepszego UX
+        document.addEventListener('DOMContentLoaded', function() {
+            const folders = document.querySelectorAll('.folder');
+            folders.forEach(folder => {
+                folder.classList.add('open');
+            });
+        });
+    </script>
+</body>
+</html>
